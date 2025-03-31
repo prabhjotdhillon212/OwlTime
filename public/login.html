@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - OwlTime</title>
+  <link rel="stylesheet" href="/styles/styles.css" />
+</head>
+<body>
+  <section class="auth-container">
+    <div class="auth-left">
+      <h1>🦉 OwlTime</h1>
+      <p>Welcome back! Login to manage your time and track your work hours.</p>
+    </div>
+
+    <div class="auth-right">
+      <h2>Login</h2>
+      <form action="/login" method="POST">
+        <label>Username</label>
+        <input type="text" name="username" required />
+
+        <label>Password</label>
+        <input type="password" name="password" required />
+
+        <button type="submit" class="cta-btn full">Login</button>
+        <p class="switch">Don't have an account? <a href="/signup.html">Sign up</a>
+        </p>
+      </form>
+    </div>
+  </section>
+</body>
+</html>

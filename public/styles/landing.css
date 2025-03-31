@@ -1,0 +1,9 @@
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #0033A0, #0077FF);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

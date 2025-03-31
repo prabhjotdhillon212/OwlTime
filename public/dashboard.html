@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - OwlTime</title>
+  <link rel="stylesheet" href="/styles/dashboard.css" />
+</head>
+<body>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div>
+      <h1>🦉 OwlTime</h1>
+      <ul>
+        <li><a href="#" class="active">Dashboard</a></li>
+        <li><a href="#">Profile</a></li>
+        <li><a href="#">Settings</a></li>
+      </ul>
+    </div>
+    <form action="/logout" method="POST">
+        <button class="logout-btn">Log Out</button>
+    </form>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="dashboard-header">
+      <h1>Welcome back, <span id="username"></span>!</h1>
+      <p>This is where you'll manage your hours and view statistics.</p>
+    </div>
+
+    <!-- Interactive Cards Section -->
+    <div class="dashboard-content">
+      <div class="card" id="clockInOutCard">
+        <h3>🕒 Clock In/Out</h3>
+        <p>Easily log your work hours with a single click.</p>
+      </div>
+      <div class="card" id="breakRemindersCard">
+        <h3>⏰ Break Reminders</h3>
+        <p>Log your breaks and keep track of your time.</p>
+      </div>
+      <div class="card" id="trackPayCard">
+        <h3>📊 Track Pay</h3>
+        <p>Calculate your earnings and view history.</p>
+      </div>
+      <div class="card" id="yourProgressCard">
+        <h3>📈 Your Progress</h3>
+        <p>See your progress and productivity.</p>
+      </div>
+    </div>
+
+    <!-- New Sections -->
+    <div class="extra-sections">
+      <div class="section" id="recent-activity">
+        <h2>📅 Recent Activity</h2>
+        <ul id="activity-list"></ul>
+      </div>
+      <div class="section" id="notifications">
+        <h2>🔔 Notifications</h2>
+        <p>You have 3 new messages from your manager.</p>
+      </div>
+      <div class="section" id="tasks">
+        <h2>📝 Task List</h2>
+        <ul id="task-list"></ul>
+      </div>
+      <div class="section" id="stats">
+        <h2>📈 Stats Overview</h2>
+        <p id="weekly-hours"></p>
+        <p id="monthly-hours"></p>
+        <p id="earnings"></p>
+      </div>
+    </div>
+  </div>
+</body>
+<script>
+
+    let isClockedIn = false;
+
+    document.querySelector(".logout-btn").addEventListener("click", async () => {
+      const response = await fetch("/logout", { method: "POST" });
+      const result = await response.json();
+
+      if (result.success) {
+        window.location.href = "/login";
+      } else {
+        alert("Failed to log out.");
+      }
+    });
+
+    async function fetchClockStatus() {
+      const response = await fetch('/clock-status');
+      const data = await response.json();
+      isClockedIn = data.isClockedIn;
+      updateClockInOutCard();
+
+      // Update username on the dashboard
+      document.getElementById("username").textContent = data.username;
+    }
+
+    document.getElementById('clockInOutCard').addEventListener('click', async () => {
+      const action = isClockedIn ? 'clockout' : 'clockin';
+      const response = await fetch(`/${action}`, { method: 'POST' });
+      const result = await response.json();
+
+      if (result.success) {
+        isClockedIn = !isClockedIn;
+        updateClockInOutCard();
+        fetchUserData();
+      } else {
+        alert(result.error || "An error occurred.");
+      }
+    });
+
+    document.getElementById('breakRemindersCard').addEventListener('click', async () => {
+      const response = await fetch('/break', { method: 'POST' });
+      const result = await response.json();
+      if (result.success) fetchUserData();
+    });
+
+    document.getElementById('trackPayCard').addEventListener('click', () => {
+      alert('Track Pay functionality coming soon!');
+    });
+
+    document.getElementById('yourProgressCard').addEventListener('click', async () => {
+      const response = await fetch('/progress', { method: 'POST' });
+      const result = await response.json();
+      if (result.success) fetchUserData();
+    });
+
+    async function fetchUserData() {
+      const response = await fetch('/getUserData');
+      const data = await response.json();
+
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+      const activityList = document.getElementById('activity-list');
+      activityList.innerHTML = '';
+      data.activity.reverse().forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.action} - ${item.time}`;
+        activityList.appendChild(li);
+      });
+
+      document.getElementById('weekly-hours').textContent = `Total Hours Worked This Week: ${data.stats.weeklyHours} hours`;
+      document.getElementById('monthly-hours').textContent = `Total Hours Worked This Month: ${data.stats.monthlyHours} hours`;
+      document.getElementById('earnings').textContent = `Total Earnings: $${data.stats.earnings}`;
+    }
+
+    function updateClockInOutCard() {
+      const card = document.getElementById('clockInOutCard');
+      const cardTitle = card.querySelector("h3");
+      const cardDescription = card.querySelector("p");
+
+      if (isClockedIn) {
+        cardTitle.textContent = "🕒 Clock Out";
+        cardDescription.textContent = "Click to log out of your work hours.";
+      } else {
+        cardTitle.textContent = "🕒 Clock In";
+        cardDescription.textContent = "Click to log in your work hours.";
+      }
+    }
+
+    fetchClockStatus();
+    fetchUserData();
+</script>
+</html>
